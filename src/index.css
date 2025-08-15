@@ -2,39 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* 주식투자 분석 툴 디자인 시스템 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* 메인 배경 및 텍스트 */
+    --background: 249 251 252; /* 연한 청백색 */
+    --foreground: 203 47% 12%; /* 진한 네이비 */
 
+    /* 카드 및 패널 */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 203 47% 12%;
 
+    /* 팝오버 */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 203 47% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* 프라이머리 (메인 브랜드 색상) */
+    --primary: 217 78% 51%; /* 생생한 파란색 */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 217 78% 45%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* 세컨더리 */
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 203 47% 12%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* 뮤트 */
+    --muted: 210 20% 96%;
+    --muted-foreground: 203 20% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* 액센트 */
+    --accent: 217 78% 95%;
+    --accent-foreground: 217 78% 51%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* 상태 색상 */
+    --success: 142 71% 45%; /* 상승 녹색 */
+    --success-foreground: 0 0% 100%;
+    --danger: 348 83% 55%; /* 하락 빨간색 */
+    --danger-foreground: 0 0% 100%;
+    --warning: 45 93% 47%; /* 경고 노란색 */
+    --warning-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* 기본 요소들 */
+    --destructive: 348 83% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 20% 90%;
+    --input: 214 20% 92%;
+    --ring: 217 78% 51%;
 
     --radius: 0.5rem;
 
