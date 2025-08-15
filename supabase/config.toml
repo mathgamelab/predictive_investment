@@ -1,1 +1,4 @@
 project_id = "kdpwzychotnyqshpyerq"
+
+[functions.update-stock-list]
+verify_jwt = false

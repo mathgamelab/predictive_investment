@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      stocks: {
+        Row: {
+          company_name: string
+          created_at: string
+          id: string
+          isin_code: string
+          listing_date: string | null
+          market: string
+          stock_code: string
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          id?: string
+          isin_code: string
+          listing_date?: string | null
+          market: string
+          stock_code: string
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          id?: string
+          isin_code?: string
+          listing_date?: string | null
+          market?: string
+          stock_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
