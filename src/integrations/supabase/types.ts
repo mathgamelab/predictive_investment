@@ -10,47 +10,17 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
-      play_counts: {
-        Row: {
-          created_at: string
-          game_id: string
-          name: string
-          play_count: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          game_id: string
-          name?: string
-          play_count?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          game_id?: string
-          name?: string
-          play_count?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      increment_click_count: {
-        Args: { game_id: string }
-        Returns: undefined
-      }
-      increment_play_count: {
-        Args: { gid: string }
-        Returns: number
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
