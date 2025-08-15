@@ -5,12 +5,17 @@ import AnalysisSection from "@/components/AnalysisSection";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Wrench, Lock } from "lucide-react";
 
 const Index = () => {
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [analysisData, setAnalysisData] = useState<any>(null);
   const [isUpdatingStocks, setIsUpdatingStocks] = useState(false);
+  const [isUpdatingDartCodes, setIsUpdatingDartCodes] = useState(false);
+  const [isFetchingFinancialData, setIsFetchingFinancialData] = useState(false);
+  const [financialData, setFinancialData] = useState<any>(null);
   const { toast } = useToast();
 
   const handleSearch = async (symbol: string) => {
@@ -109,9 +114,111 @@ const Index = () => {
     }
   };
 
+  const updateDartCodes = async () => {
+    setIsUpdatingDartCodes(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('update-dart-codes');
+      
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "DART 고유번호 업데이트 완료",
+        description: `${data.message}`,
+      });
+    } catch (error) {
+      console.error('DART codes update error:', error);
+      toast({
+        title: "업데이트 실패",
+        description: "DART 고유번호 업데이트 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdatingDartCodes(false);
+    }
+  };
+
+  const fetchFinancialData = async () => {
+    if (!selectedStock) {
+      toast({
+        title: "종목을 먼저 선택해주세요",
+        description: "분석할 종목을 검색하여 선택한 후 재무 데이터 분석을 진행해주세요.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsFetchingFinancialData(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-financial-data', {
+        body: { stockCode: selectedStock.symbol }
+      });
+      
+      if (error) {
+        throw error;
+      }
+
+      // 재무 데이터를 가져와서 표시
+      const { data: financialDataFromDB, error: fetchError } = await supabase
+        .from('financial_data')
+        .select('*')
+        .eq('stock_code', selectedStock.symbol)
+        .order('fiscal_year', { ascending: false });
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      setFinancialData(financialDataFromDB);
+
+      toast({
+        title: "재무 데이터 수집 완료",
+        description: `${data.message}`,
+      });
+    } catch (error) {
+      console.error('Financial data fetch error:', error);
+      toast({
+        title: "데이터 수집 실패",
+        description: "재무 데이터 수집 중 오류가 발생했습니다.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsFetchingFinancialData(false);
+    }
+  };
+
   const handleGenerateReport = () => {
     // 보고서 생성 로직
     console.log("보고서 생성 중...");
+  };
+
+  const testStorageConnection = async () => {
+    try {
+      // Edge Function을 호출하여 Storage 연결을 테스트
+      const { data, error } = await supabase.functions.invoke('test-storage');
+      if (error) {
+        throw error;
+      }
+      
+      if (data.success) {
+        toast({
+          title: "Storage 연결 테스트 성공",
+          description: "모든 Storage 테스트가 통과했습니다.",
+        });
+      } else {
+        throw new Error(data.error || 'Storage 테스트 실패');
+      }
+    } catch (error) {
+      console.error('Storage connection test error:', error);
+      toast({
+        title: "Storage 연결 테스트 실패",
+        description: error instanceof Error ? error.message : "Storage 연결에 문제가 발생했습니다.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -119,17 +226,106 @@ const Index = () => {
       <StockSearchHeader onSearch={handleSearch} />
       
       <main className="container mx-auto px-4 py-8 space-y-8">
-        <div className="flex justify-end mb-4">
-          <Button 
-            onClick={updateStockList}
-            disabled={isUpdatingStocks}
-            variant="outline"
-          >
-            {isUpdatingStocks ? "업데이트 중..." : "KRX 종목 리스트 업데이트"}
-          </Button>
-        </div>
+        {/* 분석 환경 설정 패널 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5" />
+              분석 환경 설정
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                onClick={updateDartCodes}
+                disabled={isUpdatingDartCodes}
+                className="flex-1"
+              >
+                {isUpdatingDartCodes ? '업데이트 중...' : 'DART 고유번호 업데이트'}
+              </Button>
+              <Button 
+                onClick={updateStockList}
+                disabled={isUpdatingStocks}
+                className="flex-1"
+              >
+                {isUpdatingStocks ? "업데이트 중..." : "KRX 종목 리스트 업데이트"}
+              </Button>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                onClick={testStorageConnection}
+                variant="outline"
+                className="flex-1"
+              >
+                Storage 연결 테스트
+              </Button>
+            </div>
+            <div className="text-sm text-muted-foreground flex items-center gap-2">
+              <Lock className="h-4 w-4" />
+              API 키는 자동으로 데이터베이스에서 가져옵니다. 별도 입력이 필요 없습니다.
+            </div>
+          </CardContent>
+        </Card>
         
         <StockInfoCard stockInfo={selectedStock} isLoading={isLoading} />
+        
+        {/* 재무 데이터 분석 섹션 */}
+        {selectedStock && (
+          <Card>
+            <CardHeader>
+              <CardTitle>📊 재무 데이터 분석</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">
+                  {selectedStock.name}의 최근 5년간 재무 데이터를 분석합니다.
+                </p>
+                <Button 
+                  onClick={fetchFinancialData}
+                  disabled={isFetchingFinancialData}
+                >
+                  {isFetchingFinancialData ? "분석 중..." : "재무 데이터 분석 시작"}
+                </Button>
+              </div>
+              
+              {financialData && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left p-2">연도</th>
+                        <th className="text-right p-2">매출액</th>
+                        <th className="text-right p-2">영업이익</th>
+                        <th className="text-right p-2">당기순이익</th>
+                        <th className="text-right p-2">총자산</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {financialData.map((data: any) => (
+                        <tr key={data.fiscal_year} className="border-b">
+                          <td className="p-2">{data.fiscal_year}</td>
+                          <td className="text-right p-2">
+                            {data.revenue ? `${(data.revenue / 100000000).toFixed(0)}억원` : 'N/A'}
+                          </td>
+                          <td className="text-right p-2">
+                            {data.operating_income ? `${(data.operating_income / 100000000).toFixed(0)}억원` : 'N/A'}
+                          </td>
+                          <td className="text-right p-2">
+                            {data.net_income ? `${(data.net_income / 100000000).toFixed(0)}억원` : 'N/A'}
+                          </td>
+                          <td className="text-right p-2">
+                            {data.total_assets ? `${(data.total_assets / 100000000).toFixed(0)}억원` : 'N/A'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+        
         <AnalysisSection 
           analysisData={analysisData} 
           isLoading={isLoading} 
